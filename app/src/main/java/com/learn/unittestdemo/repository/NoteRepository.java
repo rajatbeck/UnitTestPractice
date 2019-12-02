@@ -6,6 +6,7 @@ import com.learn.unittestdemo.models.Note;
 import com.learn.unittestdemo.persistance.NoteDao;
 import com.learn.unittestdemo.ui.Resource;
 
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
@@ -73,6 +74,30 @@ public class NoteRepository {
         if (note.getTitle() == null) {
             throw new Exception(NOTE_TITLE_NULL);
         }
+    }
+
+    public Flowable<Resource<Integer>> updateNote(final Note note) throws Exception {
+        checkTitle(note);
+        return noteDao.updateNote(note)
+                .delaySubscription(timeDelay, timeUnit)
+                .onErrorReturn(new Function<Throwable, Integer>() {
+                    @Override
+                    public Integer apply(Throwable throwable) throws Exception {
+                        return -1;
+                    }
+                })
+                .map(new Function<Integer, Resource<Integer>>() {
+                    @Override
+                    public Resource<Integer> apply(Integer integer) throws Exception {
+                        if (integer > 0) {
+                            return Resource.success(integer, UPDATE_SUCCESS);
+                        } else {
+                            return Resource.error(null, UPDATE_FAILURE);
+                        }
+                    }
+                })
+                .subscribeOn(Schedulers.io())
+                .toFlowable();
     }
 
 }

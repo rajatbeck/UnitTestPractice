@@ -19,6 +19,8 @@ import io.reactivex.Single;
 import static com.learn.unittestdemo.repository.NoteRepository.INSERT_FAILURE;
 import static com.learn.unittestdemo.repository.NoteRepository.INSERT_SUCCESS;
 import static com.learn.unittestdemo.repository.NoteRepository.NOTE_TITLE_NULL;
+import static com.learn.unittestdemo.repository.NoteRepository.UPDATE_FAILURE;
+import static com.learn.unittestdemo.repository.NoteRepository.UPDATE_SUCCESS;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -116,6 +118,80 @@ public class NoteRepositoryTest {
         assertEquals(NOTE_TITLE_NULL,exception.getMessage());
 
     }
+
+    /*
+        update note
+        verify correct method called
+        confirm observer is triggered
+        confirm number of rows updated
+     */
+    @Test
+    void updateNote_returnNumRowsUpdated() throws Exception{
+
+        //Arrange
+        final Integer updatedRow = 1;
+        Single<Integer> returnedData = Single.just(updatedRow);
+        when(noteDao.updateNote(any(Note.class))).thenReturn(returnedData);
+
+        //Act
+        final Resource<Integer> returnedValue = noteRepository.updateNote(NOTE1).blockingFirst();
+
+        //Assert
+        verify(noteDao).updateNote(any(Note.class));
+        verifyNoMoreInteractions(noteDao);
+
+        assertEquals(returnedValue,Resource.success(1,UPDATE_SUCCESS));
+
+    }
+
+    /*
+       Update note
+       Failure(-1)
+     */
+
+    @Test
+    void updateNote_returnFailure() throws Exception{
+
+        //Arrange
+        final Integer updatedRow = -1;
+        Single<Integer> returnedData = Single.just(updatedRow);
+        when(noteDao.updateNote(any(Note.class))).thenReturn(returnedData);
+
+        //Act
+        final Resource<Integer> returnedValue = noteRepository.updateNote(NOTE1).blockingFirst();
+
+        //Assert
+        verify(noteDao).updateNote(any(Note.class));
+        verifyNoMoreInteractions(noteDao);
+
+        assertEquals(returnedValue,Resource.error(null,UPDATE_FAILURE));
+    }
+
+    /*
+       Update note
+       null title
+       throw Exception
+
+     */
+
+    @Test
+    void updateNote_nullTitle_throwException() throws Exception{
+
+        Exception exception = assertThrows(Exception.class, new Executable() {
+            @Override
+            public void execute() throws Throwable {
+                final Note note = new Note(TestUtil.TEST_NOTE_1);
+                note.setTitle(null);
+                noteRepository.updateNote(note);
+            }
+        });
+
+        assertEquals(NOTE_TITLE_NULL,exception.getMessage());
+
+    }
+
+
+
 
 
 }
