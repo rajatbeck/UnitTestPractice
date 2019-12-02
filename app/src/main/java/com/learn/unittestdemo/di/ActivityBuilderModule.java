@@ -1,6 +1,6 @@
 package com.learn.unittestdemo.di;
 
-import com.learn.unittestdemo.NotesListActivity;
+import com.learn.unittestdemo.ui.noteslist.NotesListActivity;
 
 import dagger.Module;
 import dagger.android.ContributesAndroidInjector;
